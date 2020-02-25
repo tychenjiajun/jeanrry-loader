@@ -1,0 +1,24 @@
+{
+    "name": "jeanrry-loader",
+    "description": "A Vue.js SFC loader for translating your app at building time.",
+    "version": "0.0.1",
+    "license": "GPL-2.0-only",
+    "main": "index.js",
+    "dependencies": {
+        "vue-template-compiler": "^2.6.11",
+        "frenchkiss": "^0.2.1"
+    },
+    "keywords": ["i18n","vue","vue.js","vuejs","internationalization","localization","l10n"],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/tychenjiajun/jeanrry-loader.git"
+    },
+    "author": {
+        "email": "tychenjiajun@live.cn",
+        "name": "Jiajun Chen"
+    },
+    "bugs": {
+        "url": "https://github.com/tychenjiajun/jeanrry-loader/issues"
+    },
+    "homepage": "https://github.com/tychenjiajun/jeanrry-loader"
+}
