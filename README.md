@@ -2,7 +2,7 @@
 
 A Vue.js SFC loader for translating your app at **building** time.
 
-> NOTE: This project is still work in progress. Use at your own risk!!
+> NOTE: This project is still working in progress. Use at your own risk!!
 
 ## Installation
 
