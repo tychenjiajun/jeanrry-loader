@@ -4,11 +4,22 @@
     "version": "0.0.1",
     "license": "GPL-2.0-only",
     "main": "index.js",
-    "dependencies": {
-        "vue-template-compiler": "^2.6.11",
-        "frenchkiss": "^0.2.1"
+    "scripts": {
+        "release": "semantic-release"
     },
-    "keywords": ["i18n","vue","vue.js","vuejs","internationalization","localization","l10n"],
+    "dependencies": {
+        "frenchkiss": "^0.2.1",
+        "vue-template-compiler": "^2.6.11"
+    },
+    "keywords": [
+        "i18n",
+        "vue",
+        "vue.js",
+        "vuejs",
+        "internationalization",
+        "localization",
+        "l10n"
+    ],
     "repository": {
         "type": "git",
         "url": "https://github.com/tychenjiajun/jeanrry-loader.git"
@@ -20,5 +31,8 @@
     "bugs": {
         "url": "https://github.com/tychenjiajun/jeanrry-loader/issues"
     },
-    "homepage": "https://github.com/tychenjiajun/jeanrry-loader"
+    "homepage": "https://github.com/tychenjiajun/jeanrry-loader",
+    "devDependencies": {
+        "semantic-release": "^17.0.4"
+    }
 }
