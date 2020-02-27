@@ -4,7 +4,10 @@ A Vue.js SFC loader for translating your app at **building** time.
 
 > NOTE: This project is still working in progress. Use at your own risk!!
 
-![CircleCI](https://img.shields.io/circleci/build/github/tychenjiajun/jeanrry-loader/master)
+![CircleCI](https://img.shields.io/circleci/build/github/tychenjiajun/jeanrry-loader/master?style=for-the-badge)
+![npm](https://img.shields.io/npm/dw/jeanrry-loader?style=for-the-badge)
+![npm (tag)](https://img.shields.io/npm/v/jeanrry-loader/latest?style=for-the-badge)
+![NPM](https://img.shields.io/npm/l/jeanrry-loader?style=for-the-badge)
 
 ## Installation
 
