@@ -4,6 +4,8 @@ A Vue.js SFC loader for translating your app at **building** time.
 
 > NOTE: This project is still working in progress. Use at your own risk!!
 
+![CircleCI](https://img.shields.io/circleci/build/github/tychenjiajun/jeanrry-loader/master)
+
 ## Installation
 
 Run the following command in your terminal
