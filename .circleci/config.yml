@@ -32,3 +32,9 @@ jobs:
       # Run optional required steps before releasing
       # - run: npm run build-script
       - run: yarn run release
+workflows:
+  version: 2
+  test_and_release:
+    # Run the test jobs first, then the release only when all the test jobs are successful
+    jobs:
+      - release
