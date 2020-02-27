@@ -20,7 +20,10 @@ module.exports = {
     config.module
       .rule('vue')
       .use('jeanrry-loader')
-      .loader('jeanrry-loader');
+      .loader('jeanrry-loader')
+      .options({
+        // some options, see the `Loader Options` part in readme file
+      });
   },
 };
 ```
@@ -193,11 +196,134 @@ export default {
 </script>
 ```
 
+## Loader Options
+
+Following is the complete default options
+
+```javascript
+{
+    translator: 'frenchkiss',
+    queryName: 'jeanrry',
+    blockName: 'jeanrry',
+    locale: 'en',
+    fallback: 'en',
+    functionName: 't',
+    remove: true
+}
+```
+
+### translator
+
+TBD
+
+### queryName
+
+The attribute name of the `template` block. Default is `jeanrry`, recommended to be `i18n`.
+
+```javascript
+module.exports = {
+  chainWebpack: config => {
+    config.module
+      .rule('vue')
+      .use('jeanrry-loader')
+      .loader('jeanrry-loader')
+      .options({
+        queryName: 'i18n'
+      });
+  },
+};
+```
+
+allows you to write
+
+```html
+<template i18n>
+    <!-- your SFC template -->
+</template>
+```
+
+### blockName
+
+The block name of the translation messages. Default is `jeanrry`, recommended to be `i18n`.
+
+```javascript
+module.exports = {
+  chainWebpack: config => {
+    config.module
+      .rule('vue')
+      .use('jeanrry-loader')
+      .loader('jeanrry-loader')
+      .options({
+        blockName: 'i18n'
+      });
+  },
+};
+```
+
+allows you to write
+
+```html
+<i18n>
+  {
+    "en": {
+      "hello": "Hello World"
+    }
+  }
+</i18n>
+```
+
+### locale
+
+The global locale of the whole project.
+
+### fallback
+
+The global fallback locale of the whole project.
+
+### functionName
+
+The translate function name.
+
+```javascript
+module.exports = {
+  chainWebpack: config => {
+    config.module
+      .rule('vue')
+      .use('jeanrry-loader')
+      .loader('jeanrry-loader')
+      .options({
+        functionName: '_t'
+      });
+  },
+};
+```
+
+allows you to write
+
+
+```html
+<template>
+    <h3>_t('hello')</h3>
+</template>
+```
+
+### remove
+
+Whether or not to remove the translation messages block after translation. Setting this to `false` may cause the error 'You may need an additional loader to handle the result of these loaders.' thrown by webpack, but also may benefit you on sharing messages between `jeanrry-loader` and `vue-i18n` if you set `blockName` to `i18n` at the same time.
+
+## Building for multiple languages
+
+TBD
+
+## Deploying
+
+TBD
+
 ## How it works? How to do pluralization?
 
 Unlike other i18n tools. Jeanrry loader translate at building time.
 
-When you are building your Vue.js apps, jeanrry loader search all the `*.vue` files, load the json from `<jeanrry>` block and set it with `frenchkiss.set()` and find the translate function `t()` and execute it with `frenchkiss.t()`. You can checkout the [frenchkiss.js](https://github.com/koala-interactive/frenchkiss.js) project to explore more usage.
+When you are building your Vue.js apps, jeanrry loader search all the `*.vue` files, load the json from `<jeanrry>` block and set it with `frenchkiss.set()` and find the translate function (`t()`, or your custom name set in loader options) and execute it with `frenchkiss.t()`. You can checkout the [frenchkiss.js](https://github.com/koala-interactive/frenchkiss.js) project to explore more usage.
 
 ## Todos
 
