@@ -318,9 +318,69 @@ Whether or not to remove the translation messages block after translation. Setti
 
 ## Building for multiple languages
 
-TBD
+It's recommend to use [environment variables](https://cli.vuejs.org/guide/mode-and-env.html#environment-variables) to build pages for different locales.
+
+First, add a file `.env.zh` to your project
+
+```
+VUE_APP_JEANRRY_LOCALE=zh
+VUE_APP_JEANRRY_OUTPUT_DIR=dist/zh
+```
+
+Then use the variables in `vue.config.js`
+
+```js
+module.exports = {
+    outputDir: process.env.VUE_APP_JEANRRY_OUTPUT_DIR,
+    chainWebpack: config => {
+        config.module
+            .rule('vue')
+            .use('jeanrry-loader')
+            .loader('jeanrry-loader')
+            .options({
+                locale: process.env.VUE_APP_JEANRRY_LOCALE
+            })
+    }
+}
+```
+
+Correctly set your `lang` in `public/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="<%= VUE_APP_JEANRRY_LOCALE %>">
+  <!-- your html content -->
+</html>
+```
+
+Finally, add a script `zh` (or other name you like) in your `package.json` and run it
+
+```js
+{
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "zh": "vue-cli-service build --mode zh",
+  }
+}
+```
+
+```bash
+npm run zh # will build your file in locale `zh` in `dish/zh`
+```
 
 ## Deploying
+
+### Netlify
+
+TBD
+
+### Apache HTTP Server
+
+TBD
+
+### Nginx
 
 TBD
 
