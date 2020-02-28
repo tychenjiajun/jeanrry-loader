@@ -41,7 +41,7 @@ module.exports = function (source) {
         while (current < end) {
             const stack = ['('] // the start of the function
             const functionStart = source.indexOf(functionName + '(', current + 1) + functionNameLength + 1 // skip the function name and '(', the start of the first param
-            if (functionStart === 1) break
+            if (functionStart - functionNameLength - 1 === -1) break // if there's no more translation function, break
             let pointer = functionStart
             let stringType = ''
             while (stack.length > 0 && pointer < end) {
