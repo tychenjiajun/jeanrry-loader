@@ -1,6 +1,6 @@
 # Jeanrry Loader
 
-A Vue.js SFC loader for translating your app at **building** time.
+A Vue.js SFC loader for translating your app at **compiling** time.
 
 > NOTE: This project is still working in progress. Use at your own risk!!
 
@@ -320,6 +320,8 @@ Whether or not to remove the translation messages block after translation. Setti
 
 It's recommend to use [environment variables](https://cli.vuejs.org/guide/mode-and-env.html#environment-variables) to build pages for different locales.
 
+### Building to different destination folders
+
 First, add a file `.env.zh` to your project
 
 ```
@@ -335,6 +337,18 @@ module.exports = {
     chainWebpack: config => {
         config.module
             .rule('vue')
+            .use('cache-loader')
+            .loader('cache-loader')
+            .tap(options => {
+                options.cacheIdentifier = hash([options.cacheIdentifier, process.env.VUE_APP_JEANRRY_LOCALE]) // see issue#2
+                return options
+            }).end()
+            .use('vue-loader')
+            .loader('vue-loader')
+            .tap(options => {
+                options.cacheIdentifier = hash([options.cacheIdentifier, process.env.VUE_APP_JEANRRY_LOCALE]) // see issue#2
+                return options
+            }).end()
             .use('jeanrry-loader')
             .loader('jeanrry-loader')
             .options({
@@ -359,18 +373,97 @@ Finally, add a script `zh` (or other name you like) in your `package.json` and r
 {
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "npm run zh & npm run en",
     "lint": "vue-cli-service lint",
     "zh": "vue-cli-service build --mode zh",
+    "en": "vue-cli-service build --mode en"
   }
 }
 ```
 
 ```bash
 npm run zh # will build your file in locale `zh` in `dish/zh`
+
+# or
+
+npm run build # will build both locales files
 ```
 
+### Building to the same `dist` folder but have different `index.html`
+
+This way is recommended if you have shared favicon, image and css files.
+
+First, add a file `.env.zh` to your project
+
+```
+VUE_APP_JEANRRY_LOCALE=zh
+```
+
+Then use the variables in `vue.config.js`
+
+```js
+module.exports = {
+    indexPath: process.env.VUE_APP_JEANRRY_LOCALE + '.html', // the only different place compared to the previous method
+    chainWebpack: config => {
+        config.module
+            .rule('vue')
+            .use('cache-loader')
+            .loader('cache-loader')
+            .tap(options => {
+                options.cacheIdentifier = hash([options.cacheIdentifier, process.env.VUE_APP_JEANRRY_LOCALE]) // see issue#2
+                return options
+            }).end()
+            .use('vue-loader')
+            .loader('vue-loader')
+            .tap(options => {
+                options.cacheIdentifier = hash([options.cacheIdentifier, process.env.VUE_APP_JEANRRY_LOCALE]) // see issue#2
+                return options
+            }).end()
+            .use('jeanrry-loader')
+            .loader('jeanrry-loader')
+            .options({
+                locale: process.env.VUE_APP_JEANRRY_LOCALE
+            })
+    }
+}
+```
+
+Correctly set your `lang` in `public/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="<%= VUE_APP_JEANRRY_LOCALE %>">
+  <!-- your html content -->
+</html>
+```
+
+Finally, add a script `zh` (or other name you like) in your `package.json` and run it. Dont' forget the `--no-clean` option!
+
+```js
+{
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "npm run zh & npm run en",
+    "lint": "vue-cli-service lint",
+    "zh": "vue-cli-service build --mode zh --no-clean",
+    "en": "vue-cli-service build --mode en --no-clean"
+  }
+}
+```
+
+```bash
+npm run zh # will build your file in locale `zh` in `dish/zh`
+
+# or
+
+npm run build # will build both locales files
+```
+
+Your `dist` will have two `.html` files, `zh.html` is the entry of the Chinese version and `en.html` is the entry of the English version.
+
 ## Deploying
+
+There's different taste of deploying. You can deploy like wikipedia: have different domains `en.example.com`, `zh.example.com` for different locales. Or using different sub-path `example.com/zh/`, `example.com/en/` like Vue.js official site. Or even using plain [Content-Negotiation](https://tools.ietf.org/html/rfc7231#section-5.3)
 
 ### Netlify
 
