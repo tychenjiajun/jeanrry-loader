@@ -463,7 +463,7 @@ Your `dist` will have two `.html` files, `zh.html` is the entry of the Chinese v
 
 ## Deploying
 
-There's different taste of deploying. You can deploy like wikipedia: have different domains `en.example.com`, `zh.example.com` for different locales. Or using different sub-path `example.com/zh/`, `example.com/en/` like Vue.js official site. Or even using plain [Content-Negotiation](https://tools.ietf.org/html/rfc7231#section-5.3)
+There's different flavors of deploying. You can deploy like wikipedia: have different domains `en.example.com`, `zh.example.com` for different locales. Or using different sub-path `example.com/zh/`, `example.com/en/` like Vue.js official site. Or even using plain [Content-Negotiation](https://tools.ietf.org/html/rfc7231#section-5.3)
 
 ### Netlify
 
