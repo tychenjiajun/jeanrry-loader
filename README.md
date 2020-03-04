@@ -461,9 +461,11 @@ npm run build # will build both locales files
 
 Your `dist` will have two `.html` files, `zh.html` is the entry of the Chinese version and `en.html` is the entry of the English version.
 
-## Deploying
+## Deployment
 
-There's different flavors of deploying. You can deploy like wikipedia: have different domains `en.example.com`, `zh.example.com` for different locales. Or using different sub-path `example.com/zh/`, `example.com/en/` like Vue.js official site. Or even using plain [Content-Negotiation](https://tools.ietf.org/html/rfc7231#section-5.3)
+There's different flavors of deployment. You can deploy like wikipedia: have different domains `en.example.com`, `zh.example.com` for different locales. Or using different sub-paths `example.com/zh/`, `example.com/en/` like Vue.js official site. Or even using plain [Content-Negotiation](https://tools.ietf.org/html/rfc7231#section-5.3).
+
+Deploying a multi-languages jeanrry compiled Vue.js app to different domains or different sub-paths should be simple as the original Vue.js app. So the following guides/recipes will focus on the content negotiation part. For Vue.js deployment, checkout the [vue-cli docs](https://cli.vuejs.org/guide/deployment.html).
 
 ### Netlify
 
@@ -471,7 +473,17 @@ TBD
 
 ### Apache HTTP Server
 
-TBD
+Build your app using the 'Building to the same `dist` folder but have different `index.html`' method mentioned above. Move your built files to the directory of your apache http server. Add `MultiViews` to the `Options` of your directory
+
+```xml
+<Directory "/srv/http">
+    Options Indexes FollowSymLinks MultiViews
+</Directory>
+```
+
+and rename your `*.html` files to `index.html.en`, `index.html.zh`, `index.html.jp` etc. Restart your server and using browser with different `Accept-Langauge` header values to see the effectiveness.
+
+For detail config, checkout the [Apache HTTP Server docs](https://httpd.apache.org/docs/current/content-negotiation.html).
 
 ### Nginx
 
