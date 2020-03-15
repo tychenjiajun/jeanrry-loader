@@ -2,6 +2,8 @@
 
 A Vue.js SFC loader for translating your app at **compiling** time.
 
+> NOTE: Current version is deprecated due to poor pluralization. Checkout the `next` branch to see the developing one.
+
 > NOTE: This project is still working in progress. Use at your own risk!!
 
 ![CircleCI](https://img.shields.io/circleci/build/github/tychenjiajun/jeanrry-loader/master?style=for-the-badge)
