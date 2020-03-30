@@ -23,11 +23,11 @@ Configure it in your `vue.config.js` file:
 
 ```js
 module.exports = {
-  chainWebpack: config => {
+  chainWebpack: (config) => {
     config.module
-      .rule('vue')
-      .use('jeanrry-loader')
-      .loader('jeanrry-loader')
+      .rule("vue")
+      .use("jeanrry-loader")
+      .loader("jeanrry-loader")
       .options({
         // some options, see the `Loader Options` part in readme file
       });
@@ -106,16 +106,16 @@ will be compiled to:
 </jeanrry>
 
 <script>
-  import HelloWorld from './components/HelloWorld.vue';
+  import HelloWorld from "./components/HelloWorld.vue";
 
   export default {
-    name: 'App',
+    name: "App",
     components: {
       HelloWorld,
     },
     data() {
       return {
-        name: 'Vue.js',
+        name: "Vue.js",
       };
     },
   };
@@ -133,16 +133,16 @@ will be compiled to:
 </template>
 
 <script>
-  import HelloWorld from './components/HelloWorld.vue';
+  import HelloWorld from "./components/HelloWorld.vue";
 
   export default {
-    name: 'App',
+    name: "App",
     components: {
       HelloWorld,
     },
     data() {
       return {
-        name: 'Vue.js',
+        name: "Vue.js",
       };
     },
   };
@@ -159,26 +159,18 @@ And
 </template>
 
 <jeanrry>
-  {
-    "en": {
-      "devtools": "{n}-devtools"
-    },
-    "zh": {
-      "devtools": "{n}-开发工具"
-    }
-  }
+  { "en": { "devtools": "{n}-devtools" }, "zh": { "devtools": "{n}-开发工具" } }
 </jeanrry>
 
-
 <script>
-export default {
-  name: 'HelloWorld',
-  data () {
-    return {
-      name: 'vue'
-    }
-  }
-}
+  export default {
+    name: "HelloWorld",
+    data() {
+      return {
+        name: "vue",
+      };
+    },
+  };
 </script>
 ```
 
@@ -192,14 +184,14 @@ will be compiled to:
 </template>
 
 <script>
-export default {
-  name: 'HelloWorld',
-  data () {
-    return {
-      name: 'vue'
-    }
-  }
-}
+  export default {
+    name: "HelloWorld",
+    data() {
+      return {
+        name: "vue",
+      };
+    },
+  };
 </script>
 ```
 
@@ -229,13 +221,13 @@ The attribute name of the `template` block. Default is `jeanrry`, recommended to
 
 ```javascript
 module.exports = {
-  chainWebpack: config => {
+  chainWebpack: (config) => {
     config.module
-      .rule('vue')
-      .use('jeanrry-loader')
-      .loader('jeanrry-loader')
+      .rule("vue")
+      .use("jeanrry-loader")
+      .loader("jeanrry-loader")
       .options({
-        queryName: 'i18n'
+        queryName: "i18n",
       });
   },
 };
@@ -245,7 +237,7 @@ allows you to write
 
 ```html
 <template i18n>
-    <!-- your SFC template -->
+  <!-- your SFC template -->
 </template>
 ```
 
@@ -255,13 +247,13 @@ The block name of the translation messages. Default is `jeanrry`, recommended to
 
 ```javascript
 module.exports = {
-  chainWebpack: config => {
+  chainWebpack: (config) => {
     config.module
-      .rule('vue')
-      .use('jeanrry-loader')
-      .loader('jeanrry-loader')
+      .rule("vue")
+      .use("jeanrry-loader")
+      .loader("jeanrry-loader")
       .options({
-        blockName: 'i18n'
+        blockName: "i18n",
       });
   },
 };
@@ -271,11 +263,7 @@ allows you to write
 
 ```html
 <i18n>
-  {
-    "en": {
-      "hello": "Hello World"
-    }
-  }
+  { "en": { "hello": "Hello World" } }
 </i18n>
 ```
 
@@ -293,13 +281,13 @@ The translate function name.
 
 ```javascript
 module.exports = {
-  chainWebpack: config => {
+  chainWebpack: (config) => {
     config.module
-      .rule('vue')
-      .use('jeanrry-loader')
-      .loader('jeanrry-loader')
+      .rule("vue")
+      .use("jeanrry-loader")
+      .loader("jeanrry-loader")
       .options({
-        functionName: '_t'
+        functionName: "_t",
       });
   },
 };
@@ -307,10 +295,9 @@ module.exports = {
 
 allows you to write
 
-
 ```html
 <template>
-    <h3>_t('hello')</h3>
+  <h3>_t('hello')</h3>
 </template>
 ```
 
@@ -335,29 +322,37 @@ Then use the variables in `vue.config.js`
 
 ```js
 module.exports = {
-    outputDir: process.env.VUE_APP_JEANRRY_OUTPUT_DIR,
-    chainWebpack: config => {
-        config.module
-            .rule('vue')
-            .use('cache-loader')
-            .loader('cache-loader')
-            .tap(options => {
-                options.cacheIdentifier = hash([options.cacheIdentifier, process.env.VUE_APP_JEANRRY_LOCALE]) // see issue#2
-                return options
-            }).end()
-            .use('vue-loader')
-            .loader('vue-loader')
-            .tap(options => {
-                options.cacheIdentifier = hash([options.cacheIdentifier, process.env.VUE_APP_JEANRRY_LOCALE]) // see issue#2
-                return options
-            }).end()
-            .use('jeanrry-loader')
-            .loader('jeanrry-loader')
-            .options({
-                locale: process.env.VUE_APP_JEANRRY_LOCALE
-            })
-    }
-}
+  outputDir: process.env.VUE_APP_JEANRRY_OUTPUT_DIR,
+  chainWebpack: (config) => {
+    config.module
+      .rule("vue")
+      .use("cache-loader")
+      .loader("cache-loader")
+      .tap((options) => {
+        options.cacheIdentifier = hash([
+          options.cacheIdentifier,
+          process.env.VUE_APP_JEANRRY_LOCALE,
+        ]); // see issue#2
+        return options;
+      })
+      .end()
+      .use("vue-loader")
+      .loader("vue-loader")
+      .tap((options) => {
+        options.cacheIdentifier = hash([
+          options.cacheIdentifier,
+          process.env.VUE_APP_JEANRRY_LOCALE,
+        ]); // see issue#2
+        return options;
+      })
+      .end()
+      .use("jeanrry-loader")
+      .loader("jeanrry-loader")
+      .options({
+        locale: process.env.VUE_APP_JEANRRY_LOCALE,
+      });
+  },
+};
 ```
 
 Correctly set your `lang` in `public/index.html`
@@ -405,29 +400,37 @@ Then use the variables in `vue.config.js`
 
 ```js
 module.exports = {
-    indexPath: process.env.VUE_APP_JEANRRY_LOCALE + '.html', // the only different place compared to the previous method
-    chainWebpack: config => {
-        config.module
-            .rule('vue')
-            .use('cache-loader')
-            .loader('cache-loader')
-            .tap(options => {
-                options.cacheIdentifier = hash([options.cacheIdentifier, process.env.VUE_APP_JEANRRY_LOCALE]) // see issue#2
-                return options
-            }).end()
-            .use('vue-loader')
-            .loader('vue-loader')
-            .tap(options => {
-                options.cacheIdentifier = hash([options.cacheIdentifier, process.env.VUE_APP_JEANRRY_LOCALE]) // see issue#2
-                return options
-            }).end()
-            .use('jeanrry-loader')
-            .loader('jeanrry-loader')
-            .options({
-                locale: process.env.VUE_APP_JEANRRY_LOCALE
-            })
-    }
-}
+  indexPath: process.env.VUE_APP_JEANRRY_LOCALE + ".html", // the only different place compared to the previous method
+  chainWebpack: (config) => {
+    config.module
+      .rule("vue")
+      .use("cache-loader")
+      .loader("cache-loader")
+      .tap((options) => {
+        options.cacheIdentifier = hash([
+          options.cacheIdentifier,
+          process.env.VUE_APP_JEANRRY_LOCALE,
+        ]); // see issue#2
+        return options;
+      })
+      .end()
+      .use("vue-loader")
+      .loader("vue-loader")
+      .tap((options) => {
+        options.cacheIdentifier = hash([
+          options.cacheIdentifier,
+          process.env.VUE_APP_JEANRRY_LOCALE,
+        ]); // see issue#2
+        return options;
+      })
+      .end()
+      .use("jeanrry-loader")
+      .loader("jeanrry-loader")
+      .options({
+        locale: process.env.VUE_APP_JEANRRY_LOCALE,
+      });
+  },
+};
 ```
 
 Correctly set your `lang` in `public/index.html`
@@ -499,8 +502,8 @@ When you are building your Vue.js apps, jeanrry loader search all the `*.vue` fi
 
 ## Todos
 
-* Integration with more i18n frameworks.
-* Allowing custom block name and custom attribute name on `<template>`.
-* Support pluralization.
-* Add global setting.
-* Add tests.
+- Integration with more i18n frameworks.
+- Allowing custom block name and custom attribute name on `<template>`.
+- Support pluralization.
+- Add global setting.
+- Add tests.
