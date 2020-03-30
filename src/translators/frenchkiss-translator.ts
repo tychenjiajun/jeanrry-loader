@@ -143,7 +143,7 @@ const translator: Translator = {
         .trim()
         .replace(/(\r\n|\n|\r)/gm, ' ')
         .replace(/( anonymous)/g, '');
-      return `(${funcStr})(${paramsStr})`.replace(/"/, '\'');
+      return `(${funcStr})(${paramsStr})`.replace(/"/, "'");
     }
   }
 };
