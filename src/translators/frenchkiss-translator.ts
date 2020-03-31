@@ -17,9 +17,11 @@ function extractKey(expression: string): { result: string; rest: string } {
         // starting string
         else if (stringType === "'") {
           // ending string
+          let rest = expression.substring(p + 1).trim();
+          if (rest.length > 0 && rest.charAt(0) === ',') rest = rest.substr(1);
           return {
             result: expression.substring(0, p + 1).trim(),
-            rest: expression.substring(p + 1).trim()
+            rest: rest
           };
         }
         break;
@@ -29,9 +31,11 @@ function extractKey(expression: string): { result: string; rest: string } {
         // starting string
         else if (stringType === '"') {
           // ending string
+          let rest = expression.substring(p + 1).trim();
+          if (rest.length > 0 && rest.charAt(0) === ',') rest = rest.substr(1);
           return {
             result: expression.substring(0, p + 1).trim(),
-            rest: expression.substring(p + 1).trim()
+            rest: rest
           };
         }
         break;
@@ -41,9 +45,11 @@ function extractKey(expression: string): { result: string; rest: string } {
         // starting string
         else if (stringType === '`') {
           // ending string
+          let rest = expression.substring(p + 1).trim();
+          if (rest.length > 0 && rest.charAt(0) === ',') rest = rest.substr(1);
           return {
             result: expression.substring(0, p + 1).trim(),
-            rest: expression.substring(p + 1).trim()
+            rest: rest
           };
         }
         break;
@@ -56,19 +62,46 @@ function extractKey(expression: string): { result: string; rest: string } {
   throw new Error('Key is required!');
 }
 
-function extractParams(expression: string): { result: string; rest: string } {
-  let p = 0;
-  if (expression.charAt(0) !== '{') throw new Error('Params should be an object.');
-  const stack = ['{'];
+function extractLocale(
+  expression: string
+): {
+  result: string;
+  rest: string;
+} {
+  expression = expression.trim();
+  let p = expression.length - 1;
+  if (["'", '"', '`'].indexOf(expression.charAt(p)) < 0) {
+    if (expression.charAt(p) === ',') {
+      return {
+        result: '',
+        rest: expression.substring(0, p)
+      };
+    } else {
+      return {
+        result: '',
+        rest: expression
+      };
+    }
+  }
   let stringType = '';
-  for (p = 1; p < expression.length; p++) {
+  for (; p > 1; p--) {
     switch (expression.charAt(p)) {
       case "'": {
         if (stringType === '') stringType = "'";
         // starting string
         else if (stringType === "'") {
           // ending string
-          stringType = '';
+          let rest = expression.substring(0, p).trim();
+          if (rest.length === 0) throw new Error('Params should not be a string literal!');
+          if (rest.charAt(rest.length - 1) === ',') {
+            rest = rest.substring(0, rest.length - 1);
+          } else {
+            throw new Error('Tagged template is not supported!');
+          }
+          return {
+            rest: rest,
+            result: expression.substring(p).trim()
+          };
         }
         break;
       }
@@ -77,7 +110,17 @@ function extractParams(expression: string): { result: string; rest: string } {
         // starting string
         else if (stringType === '"') {
           // ending string
-          stringType = '';
+          let rest = expression.substring(0, p).trim();
+          if (rest.length === 0) throw new Error('Params should not be a string literal!');
+          if (rest.charAt(rest.length - 1) === ',') {
+            rest = rest.substring(0, rest.length - 1);
+          } else {
+            throw new Error('Tagged template is not supported!');
+          }
+          return {
+            rest: rest,
+            result: expression.substring(p).trim()
+          };
         }
         break;
       }
@@ -86,25 +129,26 @@ function extractParams(expression: string): { result: string; rest: string } {
         // starting string
         else if (stringType === '`') {
           // ending string
-          stringType = '';
+          let rest = expression.substring(0, p).trim();
+          if (rest.length === 0) throw new Error('Params should not be a string literal!');
+          if (rest.charAt(rest.length - 1) === ',') {
+            rest = rest.substring(0, rest.length - 1);
+          } else {
+            throw new Error('Tagged template is not supported!');
+          }
+          return {
+            rest: rest,
+            result: expression.substring(p).trim()
+          };
         }
         break;
       }
-      case '{': {
-        stack.push('{');
-        break;
-      }
-      case '}': {
-        stack.pop();
-        if (stack.length === 0)
-          return {
-            result: expression.substring(0, p + 1).trim(),
-            rest: expression.substring(p + 1).trim()
-          };
+      case ',': {
+        if (stringType === '') throw new Error('Key is required!');
       }
     }
   }
-  throw new Error('Params should be an object.');
+  throw new Error('Unexpected parsing error!');
 }
 
 const translator: Translator = {
@@ -115,19 +159,15 @@ const translator: Translator = {
     paramsExpression = paramsExpression.trim();
     let { result, rest } = extractKey(paramsExpression);
     const key = result.substring(1, result.length - 1);
-    let commaIdx = rest.search(/,/);
-    if (rest.search(/,/) === -1) {
-      return `'${kiss.t(key)}'`;
-    }
-    rest = rest.substring(commaIdx + 1).trim();
+
     if (rest.length === 0) {
       return `'${kiss.t(key)}'`;
     }
-    ({ result, rest } = extractParams(rest));
-    const paramsStr = result;
-    commaIdx = rest.search(/,/);
-    rest = rest.substring(commaIdx + 1).trim();
-    const language = rest.length === 0 ? kiss.locale() : rest;
+    ({ result, rest } = extractLocale(rest));
+
+    const language = result.length === 0 ? kiss.locale() : result;
+
+    const paramsStr = rest;
 
     try {
       const params = new Function('"use strict"; return ' + paramsStr)();
@@ -143,7 +183,7 @@ const translator: Translator = {
         .trim()
         .replace(/(\r\n|\n|\r)/gm, ' ')
         .replace(/( anonymous)/g, '');
-      return `(${funcStr})(${paramsStr})`.replace(/"/, "'");
+      return `(${funcStr})(${paramsStr})`.replace(/"/g, "'"); // todo: not necessary for template
     }
   }
 };

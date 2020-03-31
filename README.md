@@ -65,7 +65,7 @@ will be compiled to:
 
 ```html
 <template>
-  <h3>{{ 'Hi' }}</h3>
+  <h3>{{ 'Hi!' }}</h3>
 </template>
 ```
 

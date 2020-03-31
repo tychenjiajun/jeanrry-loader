@@ -6,7 +6,7 @@
   "main": "dist/index",
   "typings": "dist/index",
   "scripts": {
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "release": "semantic-release",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "compile": "tsc -p ."

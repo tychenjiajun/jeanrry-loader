@@ -35,7 +35,11 @@ function extractTranslationExpression(
   const matches = expression.matchAll(translateRegExp);
   let pointer: number;
   for (const match of matches) {
-    pointer = (match.index as number) + match[0].length; //start after (
+    const currStartPos = startPos + (match.index as number);
+
+    if (array.length > 0 && currStartPos < array[array.length - 1].end) continue; // todo: support nested translation expression
+
+    pointer = (match.index as number) + match[0].length; // start after (
     const stack = ['(']; // the start of the function
     let stringType = '';
 
@@ -123,10 +127,10 @@ function extractTranslationExpression(
       const start = content.search(new RegExp(`(${functionGroup})`));
 
       array.push({
-        start: start + startPos,
+        start: start + currStartPos,
         end: end,
         content: content.substring(start, pointer),
-        functionName: functionNameMappings[expression.substring(start, (match.index as number) + match[0].length - 1)]
+        functionName: functionNameMappings[match[2]]
       });
     }
   }

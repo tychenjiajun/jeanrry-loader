@@ -4,9 +4,10 @@ import { createFsFromVolume, Volume } from 'memfs';
 import * as kiss from 'frenchkiss';
 
 kiss.set('en', {
-  hi: 'Hi',
+  hi: 'Hi!',
   hello: 'Hello, {name}!',
-  welcome: 'Welcome to Your {name} App!'
+  welcome: 'Welcome to Your {name} App!',
+  meet: 'Nice to meet you!'
 });
 
 kiss.locale('en');
