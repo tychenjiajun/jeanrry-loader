@@ -1,6 +1,6 @@
 # Jeanrry Loader
 
-A Vue.js SFC loader for translating your app at **compiling** time.
+A Vue.js SFC loader for localizing your app at **building** time..
 
 > NOTE: This project is still working in progress. Use at your own risk!!
 
