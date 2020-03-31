@@ -138,11 +138,9 @@ For detail config, checkout the [Apache HTTP Server docs](https://httpd.apache.o
 
 TBD
 
-## How it works? How to do pluralization?
+## How it works?
 
-Unlike other i18n tools. Jeanrry loader translate at building time.
-
-When you are building your Vue.js apps, jeanrry loader search all the `*.vue` files, load the json from `<jeanrry>` block and set it with `frenchkiss.set()` and find the translate function (`t()`, or your custom name set in loader options) and execute it with `frenchkiss.t()`. You can checkout the [frenchkiss.js](https://github.com/koala-interactive/frenchkiss.js) project to explore more usage.
+TBD
 
 ## Todos
 
