@@ -57,17 +57,14 @@ jobs:
       - run: yarn run release
 workflows:
   version: 2
-  test:
-    jobs:
-      - test
-  build:
-    jobs:
-      - build
-  release:
+  test-build-and-release:
     jobs:
       - test
       - build
       - release:
+          requires:
+            - test
+            - build
           filters:
             branches:
-              only: master
+              only: release
