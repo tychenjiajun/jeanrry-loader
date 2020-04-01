@@ -33,7 +33,7 @@ jobs:
           name: Install Dependencies
           command: yarn install --frozen-lockfile
       - run:
-          name: Compile Typescript
+          name: Run Jest Test
           command: yarn run test
       - save_cache:
           name: Save Yarn Package Cache
@@ -51,10 +51,18 @@ jobs:
             - yarn-packages-{{ checksum "yarn.lock" }}
       - run:
           name: Install Dependencies
-          command: yarn install --frozen-lockfile
-      # Run optional required steps before releasing
-      # - run: npm run build-script
-      - run: yarn run release
+          command: yarn install --frozen-lockfile            
+      - run:
+          name: Compile Typescript
+          command: yarn run compile
+      - run: 
+          name: Release
+          command: yarn run release
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn          
 workflows:
   version: 2
   test-build-and-release:
