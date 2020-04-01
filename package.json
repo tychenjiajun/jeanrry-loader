@@ -5,6 +5,7 @@
   "license": "GPL-2.0-only",
   "main": "dist/index",
   "typings": "dist/index",
+  "files": ["dist/**", "*"],
   "scripts": {
     "test": "jest --detectOpenHandles",
     "release": "semantic-release",
