@@ -59,8 +59,5 @@
   },
   "jest": {
     "testEnvironment": "node"
-  },
-  "release": {
-    "branches": ["release"]
   }
 }
