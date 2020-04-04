@@ -1,6 +1,7 @@
 import compiler from './testHelpers/compiler';
 import getCodeFromStats from './testHelpers/getCodeFromStats';
 import getExpectedResult from './testHelpers/getExpectedResult';
+import frenchkiss from 'frenchkiss';
 
 test('shorthand attribute', async () => {
   const fileName = 'ShorthandAttribute';
@@ -65,15 +66,15 @@ test('use function call from vue instance as params in frenchkiss', async () => 
   expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
 });
 
-test('ignore nested translation expression in frenchkiss', async () => {
-  const fileName = 'IgnoreNestedTranslation';
+test('skip nested translation expression in frenchkiss', async () => {
+  const fileName = 'SkipNestedTranslation';
   const stats = await compiler(fileName);
 
   expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
 });
 
-test('ignore wrong key type in frenchkiss', async () => {
-  const fileName = 'IgnoreWrongType';
+test('skip incorrect key type in frenchkiss', async () => {
+  const fileName = 'SkipIncorrectKeyType';
   const stats = await compiler(fileName);
 
   expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
@@ -88,6 +89,23 @@ test('skip script', async () => {
 
 test('skip style', async () => {
   const fileName = 'SkipStyle';
+  const stats = await compiler(fileName);
+
+  expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
+});
+
+test('translate missing key in frenchkiss', async () => {
+  const fileName = 'MissingKey';
+  const stats = await compiler(fileName);
+
+  expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
+});
+
+test('skip missing key in frenchkiss', async () => {
+  frenchkiss.onMissingKey(() => {
+    throw new Error();
+  });
+  const fileName = 'SkipMissingKey';
   const stats = await compiler(fileName);
 
   expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
