@@ -1,6 +1,6 @@
 {
   "name": "jeanrry-loader",
-  "description": "A Vue.js SFC loader for translating your app at building time.",
+  "description": "A Vue.js SFC loader for localizing your app at building time.",
   "version": "0.0.1",
   "license": "GPL-2.0-only",
   "main": "dist/index",
