@@ -78,3 +78,17 @@ test('ignore wrong key type in frenchkiss', async () => {
 
   expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
 });
+
+test('skip script', async () => {
+  const fileName = 'SkipScript';
+  const stats = await compiler(fileName);
+
+  expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
+});
+
+test('skip style', async () => {
+  const fileName = 'SkipStyle';
+  const stats = await compiler(fileName);
+
+  expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
+});
