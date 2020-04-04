@@ -70,14 +70,6 @@ module.exports = {
 </template>
 ```
 
-will be compiled to:
-
-```html
-<template>
-  <h3>{{ 'Hi!' }}</h3>
-</template>
-```
-
 ### Use on component's props or element's attribute
 
 ```html
@@ -86,27 +78,11 @@ will be compiled to:
 </template>
 ```
 
-will be compiled to:
-
-```html
-<template>
-  <HelloWorld :msg="'Welcome to Your Vue.js App!'" />
-</template>
-```
-
 ### Use with your component's data
 
 ```html
 <template>
   <HelloWorld :msg="t('welcome', { name: name })" />
-</template>
-```
-
-will be compiled to:
-
-```html
-<template>
-  <HelloWorld :msg="(function(a,f,k,l,v ) { var p=a||{};return 'Hello, '+(p['name']||(p['name']=='0'?0:'name' in p?'':v('name',k,l)))+'!' })({ name: name })" />
 </template>
 ```
 
@@ -174,9 +150,29 @@ The parameters are nearly the same as [`frenchkiss.t`](https://github.com/koala-
 
 The return value can be a string literal or a string wrapped function call like `(function(a,f,k,l,v ) { var p=a||{};return 'Hello, '+(p['name']||(p['name']=='0'?0:'name' in p?'':v('name',k,l)))+'!' })({ name: name })`
 
+## How it works?
+
+Unlike Vue-i18n or other i18n frameworks that runs in browser runtime, Jeanrry Loader run as a Vue `*.vue` files pre-processor on your own machine. It find the **translation expression** in your `*.vue` files and translate them before the Vue compiling. For example,
+
+```html
+<template>
+  <HelloWorld :msg="t('welcome', { name: name })" />
+</template>
+```
+
+will be "translated" to:
+
+```html
+<template>
+  <HelloWorld :msg="(function(a,f,k,l,v ) { var p=a||{};return 'Hello, '+(p['name']||(p['name']=='0'?0:'name' in p?'':v('name',k,l)))+'!' })({ name: name })" />
+</template>
+```
+
+And the Vue compiler will see the translated `<template>`. But this process also brings the following limitations.
+
 ## Limitations
 
-You should not include double quotes in your translator settings. For example, in frenchkiss:
+Directly using double quotes in your translator settings will cause unexpected errors. For example, in frenchkiss:
 
 ```js
 frenchkiss.set('en', {
@@ -184,7 +180,7 @@ frenchkiss.set('en', {
 });
 ```
 
-may cause unexpected error, you should use escape instead
+will cause unexpected error, you should use escape instead
 
 ```js
 frenchkiss.set('en', {
@@ -192,7 +188,7 @@ frenchkiss.set('en', {
 });
 ```
 
-Characters like `<` and `>` are also recommended to be used in escape form `&lt;` and `&gt;`
+Characters like `<` and `>` are also need to be used in escape form `&lt;` and `&gt;`
 
 ## Building for multiple languages
 
@@ -223,10 +219,6 @@ and rename your `*.html` files to `index.html.en`, `index.html.zh`, `index.html.
 For detail config, checkout the [Apache HTTP Server docs](https://httpd.apache.org/docs/current/content-negotiation.html).
 
 ### Nginx
-
-TBD
-
-## How it works?
 
 TBD
 
