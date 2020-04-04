@@ -15,6 +15,13 @@ Run the following command in your terminal
 
 ```bash
 npm install jeanrry-loader --save
+# or
+yarn add jeanrry-loader 
+
+# to use jeanrry loader, you should also install one of our supported i18n/l10n frameworks. currently we only support frenchkiss
+npm install frenchkiss --save
+# or
+yarn add frenchkiss
 ```
 
 Configure it in your `vue.config.js` file:
@@ -51,7 +58,9 @@ module.exports = {
 
 ## Usage
 
-Jeanrry loader only works on your SFC `*.vue` files!
+> Jeanrry loader only works on your SFC `*.vue` files!
+
+> Following usage examples are based on [frenchkiss](https://github.com/koala-interactive/frenchkiss.js). The `t` function call is nearly the same as [`frenchkiss.t`](https://github.com/koala-interactive/frenchkiss.js#frenchkisstkey-string-params-object-lang-string-string)
 
 ### Basic Usage
 
@@ -83,14 +92,25 @@ will be compiled to:
 <template>
   <HelloWorld :msg="'Welcome to Your Vue.js App!'" />
 </template>
-<script>
-  // your SFC script part
-</script>
 ```
 
 ### Use with your component's data
 
-TBD
+```html
+<template>
+  <HelloWorld :msg="t('welcome', { name: name })" />
+</template>
+```
+
+will be compiled to:
+
+```html
+<template>
+  <HelloWorld :msg="(function(a,f,k,l,v ) { var p=a||{};return 'Hello, '+(p['name']||(p['name']=='0'?0:'name' in p?'':v('name',k,l)))+'!' })({ name: name })" />
+</template>
+```
+
+Goes to the [translators](#translators) part to see the apis of the translators.
 
 ## Loader Options
 
@@ -102,9 +122,77 @@ Following is the complete default options
 }
 ```
 
-### Translators
+## Translators
 
-TBD
+### Frenchkiss Translator
+
+The default translator for jeanrry loader.
+
+#### Installation
+
+```bash
+npm install frenchkiss --save
+# or
+yarn add frenchkiss
+```
+
+#### Setup
+
+You can call any functions from [frenchkiss](https://github.com/koala-interactive/frenchkiss.js#-documentation) except for the followings:
+
+- [`frenchkiss.onMissingVariable(fn: Function)`](https://github.com/koala-interactive/frenchkiss.js#frenchkissonmissingvariablefn-function): you should let Vue to do it in browser runtime.
+- [`frenchkiss.plural(lang: string, fn: Function)`](https://github.com/koala-interactive/frenchkiss.js#plural-category): currently not supported, use plural expression instead.
+
+Following functions should be called carefully:
+
+- [`frenchkiss.onMissingKey(missingKeyHandler: Function)`](https://github.com/koala-interactive/frenchkiss.js#frenchkissonmissingkeyfn-function): when an [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) thrown from the `missingKeyHandler`, your corresponding `t()` won't be called by the jeanrry loader. This is useful if you have a `t` function in your Vue instance and you want Vue to call it.
+
+A typical setup should be like the following. Make sure they're called before the webpack running.
+
+```js
+const frenchkiss = require('frenchkiss');
+
+// set up, you can load files here
+frenchkiss.set('en', {
+  hi: 'Hi!',
+  hello: 'Hello, {name}!',
+  welcome: 'Welcome to Your {name} App!'
+});
+
+// setting the default locale
+frenchkiss.locale('en')
+```
+
+#### APIs
+
+##### `t(key: string, params?: object, lang?: string): string`
+
+The parameters are nearly the same as [`frenchkiss.t`](https://github.com/koala-interactive/frenchkiss.js#frenchkisstkey-string-params-object-lang-string-string) except for the following:
+
+- `key` can only be a string literal, or the function won't be call
+- `lang` can only be a string literal
+
+The return value can be a string literal or a string wrapped function call like `(function(a,f,k,l,v ) { var p=a||{};return 'Hello, '+(p['name']||(p['name']=='0'?0:'name' in p?'':v('name',k,l)))+'!' })({ name: name })`
+
+## Limitations
+
+You should not include double quotes in your translator settings. For example, in frenchkiss:
+
+```js
+frenchkiss.set('en', {
+  quot: '"'
+});
+```
+
+may cause unexpected error, you should use escape instead
+
+```js
+frenchkiss.set('en', {
+  quot: '&quot;'
+});
+```
+
+Characters like `<` and `>` are also recommended to be used in escape form `&lt;` and `&gt;`
 
 ## Building for multiple languages
 
