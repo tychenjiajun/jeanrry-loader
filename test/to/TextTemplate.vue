@@ -1,5 +1,5 @@
 <template>
   <div>
-    {{ 'Hi!' }}
+    Hi!
   </div>
 </template>

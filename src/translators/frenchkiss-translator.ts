@@ -1,4 +1,4 @@
-import { Translator } from '../interfaces';
+import { Translator, TranslateExpression, TranslateResult } from '../interfaces';
 import * as kiss from 'frenchkiss';
 
 kiss.onMissingVariable((variable, key, language) => {
@@ -152,16 +152,21 @@ function extractLocale(
 }
 
 const translator: Translator = {
-  mappings: {
+  functionNameMappings: {
     t: 't'
   },
-  t(paramsExpression: string): string {
-    paramsExpression = paramsExpression.trim();
+  translate(translateExpression: TranslateExpression): TranslateResult {
+    const paramsExpression = translateExpression.content
+      .substring(translateExpression.content.search(/\(/) + 1, translateExpression.content.length - 1)
+      .trim();
     let { result, rest } = extractKey(paramsExpression);
     const key = result.substring(1, result.length - 1);
 
     if (rest.length === 0) {
-      return `'${kiss.t(key)}'`;
+      return {
+        optimized: translateExpression.optimize,
+        content: translateExpression.optimize ? kiss.t(key) : `'${kiss.t(key)}'`
+      };
     }
     ({ result, rest } = extractLocale(rest));
 
@@ -171,7 +176,10 @@ const translator: Translator = {
 
     try {
       const params = new Function('"use strict"; return ' + paramsStr)();
-      return `'${kiss.t(key, params, language)}'`;
+      return {
+        optimized: translateExpression.optimize,
+        content: translateExpression.optimize ? kiss.t(key, params, language) : `'${kiss.t(key, params, language)}'`
+      };
     } catch (err) {
       try {
         kiss.t(key, {}, language); // fresh the cache
@@ -183,7 +191,10 @@ const translator: Translator = {
         .trim()
         .replace(/(\r\n|\n|\r)/gm, ' ')
         .replace(/( anonymous)/g, '');
-      return `(${funcStr})(${paramsStr})`.replace(/"/g, "'"); // todo: not necessary for template
+      return {
+        optimized: false,
+        content: `(${funcStr})(${paramsStr})`
+      };
     }
   }
 };

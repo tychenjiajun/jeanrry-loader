@@ -1,5 +1,5 @@
 <template>
   <div>
-    {{ 'Hello, Jeanrry!' }}
+    Hello, Jeanrry!
   </div>
 </template>

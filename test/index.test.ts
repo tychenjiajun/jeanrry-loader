@@ -110,3 +110,10 @@ test('skip missing key in frenchkiss', async () => {
 
   expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
 });
+
+test('optimize spaces', async () => {
+  const fileName = 'SpaceOptimize';
+  const stats = await compiler(fileName);
+
+  expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
+});

@@ -1,3 +1,3 @@
 <template>
-  <div v-bind:title="'Hi!'"></div>
+  <div title="Hi!"></div>
 </template>

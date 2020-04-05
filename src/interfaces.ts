@@ -1,29 +1,38 @@
 interface TranslateFunction {
-  (expression: string): string;
+  (translateExpression: TranslateExpression): TranslateResult;
+}
+
+export interface TranslateResult {
+  optimized: boolean;
+  content: string;
 }
 
 export interface FunctionNameMappings {
-  [k: string]: 't' | 'te' | 'td' | 'n' | 'd';
+  [name: string]: string;
 }
 
 export interface Translator {
-  t?: TranslateFunction;
-  te?: TranslateFunction;
-  td?: TranslateFunction;
-  n?: TranslateFunction;
-  d?: TranslateFunction;
-  mappings: {
-    [k: string]: 't' | 'te' | 'td' | 'n' | 'd';
-  };
+  functionNameMappings: FunctionNameMappings;
+  translate: TranslateFunction;
 }
 
 export interface LoaderOption {
   translator?: Translator;
 }
 
-export interface TranslateExpression {
-  start: number;
+export interface TranslateExpression extends Expression {
+  optimize: boolean;
+  functionName: string;
+}
+
+export interface Expression {
+  begin: number;
   end: number;
   content: string;
-  functionName: 't' | 'te' | 'td' | 'n' | 'd';
+  type: ExpressionType;
+}
+
+export enum ExpressionType {
+  text,
+  attr
 }
