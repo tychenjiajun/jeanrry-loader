@@ -117,3 +117,10 @@ test('optimize spaces', async () => {
 
   expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
 });
+
+test('multiple sequential text template', async () => {
+  const fileName = 'MultipleTextTemplate';
+  const stats = await compiler(fileName);
+
+  expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
+});

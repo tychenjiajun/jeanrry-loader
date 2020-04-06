@@ -10,7 +10,7 @@ const qnameCapture = `((?:${ncname}\\:)?${ncname})`;
 const startTag = new RegExp(`<${qnameCapture}.*(( :| \\.| v-bind:).*\\=".*").*(\\/?)>`, 'g');
 const endTag = new RegExp(`<\\/${qnameCapture}[^>]*>`, 'g');
 
-const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/;
+const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
 
 const bindRE = /\s:|\s\.|\sv-bind:/g;
 
@@ -190,6 +190,7 @@ export default function loader(source: string): string {
   if (tagsPositions.length > 0) {
     const matches = toCompileSource.substring(0, tagsPositions[0]).matchAll(defaultTagRE);
     for (const match of matches) {
+      console.log(match);
       let begin = (match.index as number) + 2; // skip the {{
       for (; toCompileSource.charAt(begin) === ' '; begin++);
       translateExpressions = translateExpressions.concat(
