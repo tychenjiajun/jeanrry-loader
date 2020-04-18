@@ -190,7 +190,6 @@ export default function loader(source: string): string {
   if (tagsPositions.length > 0) {
     const matches = toCompileSource.substring(0, tagsPositions[0]).matchAll(defaultTagRE);
     for (const match of matches) {
-      console.log(match);
       let begin = (match.index as number) + 2; // skip the {{
       for (; toCompileSource.charAt(begin) === ' '; begin++);
       translateExpressions = translateExpressions.concat(
@@ -264,6 +263,9 @@ export default function loader(source: string): string {
       }
       result = result + toCompileSource.substring(translatingPointer, translateExpression.begin) + translated.content;
     } catch (err) {
+      console.warn(
+        `Skipping translation [ ${translateExpression.content} ] in ${this.resource} at ${translateExpression.begin}: ${err}`
+      );
       result =
         result + toCompileSource.substring(translatingPointer, translateExpression.begin) + translateExpression.content;
     }

@@ -4,10 +4,15 @@ A Vue.js SFC loader for localizing your app at **building** time.
 
 > NOTE: This project is still working in progress. Use at your own risk!!
 
-![CircleCI](https://img.shields.io/circleci/build/github/tychenjiajun/jeanrry-loader/master?style=for-the-badge)
-![npm](https://img.shields.io/npm/dw/jeanrry-loader?style=for-the-badge)
-![npm (tag)](https://img.shields.io/npm/v/jeanrry-loader/latest?style=for-the-badge)
+[![CircleCI](https://img.shields.io/circleci/build/github/tychenjiajun/jeanrry-loader/master?style=for-the-badge)](https://circleci.com/gh/tychenjiajun/jeanrry-loader)
+[![npm](https://img.shields.io/npm/dw/jeanrry-loader?style=for-the-badge)](https://www.npmjs.com/package/jeanrry-loader)
+[![npm (tag)](https://img.shields.io/npm/v/jeanrry-loader/latest?style=for-the-badge)](https://www.npmjs.com/package/jeanrry-loader)
 ![NPM](https://img.shields.io/npm/l/jeanrry-loader?style=for-the-badge)
+
+## Supported I18n/L10n Frameworks
+
+* [frenchkiss.js](#FrenchkissTranslator)
+* [Project Fluent](https://projectfluent.org/)
 
 ## Installation
 
@@ -94,13 +99,23 @@ Following is the complete default options
 
 ```javascript
 {
-    translator: frenchkissTranslator, // in jeanrry-loader/dist/translators
+  translator: frenchkissTranslator, // in jeanrry-loader/dist/translators
 }
+```
+
+If you want to use `$t` instead of `t`:
+
+```javascript
+import FluentTranslator from "jeanrry-loader/dist/translators/fluent-translator;
+
+FluentTranslator.functionNameMappings = { '$t' : 't' }
 ```
 
 ## Translators
 
-### Frenchkiss Translator
+Jeanrry Loader doesn't define any new format or syntax of i18n/l10n. Instead, it use other existing i18n/l10n frameworks to translate. Translators in jeanrry loader is the bridge connecting the i18n/l10n frameworks and the loader.
+
+### [Frenchkiss]((https://github.com/koala-interactive/frenchkiss.js)) Translator
 
 The default translator for jeanrry loader.
 
@@ -139,16 +154,69 @@ frenchkiss.set('en', {
 frenchkiss.locale('en')
 ```
 
+### [Fluent](https://projectfluent.org/) Translator
+
+Gives you the ability to use [Fluent](https://projectfluent.org/), a localization system
+for natural-sounding translations. The translator relies on [`@fluent/bundle`](https://projectfluent.org/fluent.js/bundle/index.html)
+
+#### Installation
+
+```bash
+npm install @fluent/bundle --save
+# or
+yarn add @fluent/bundle
+```
+
+#### Setup
+
+```js
+import {FluentBundle, FluentResource} from "@fluent/bundle";
+import FluentTranslator from "jeanrry-loader/dist/translators/fluent-translator;
+
+let resource = new FluentResource(`
+-brand-name = Foo 3000
+welcome = Welcome, {$name}, to {-brand-name}!
+`);
+
+let bundle = new FluentBundle("en-US");
+let errors = bundle.addResource(resource);
+if (errors.length) {
+    // Syntax errors are per-message and don't break the whole resource
+}
+
+FluentTranslator.bundle = bundle; // important
+
+module.exports = {
+  chainWebpack: (config) => {
+    config.module
+      .rule('jeanrry-loader')
+      .test(/\.vue$/)
+      .resourceQuery(/\?vue.*(&type=template).*/)
+      .use('jeanrry-loader')
+      .loader('jeanrry-loader')
+      .options({
+          translator: FluentTranslator
+      });
+  },
+};
+```
+
+#### Usage
+
+```html
+<template>
+  <p>{{ t('welcome' { name: 'Anna' }) }}</p> <!-- Welcome, Anna, to Foo 3000! -->
+</template>
+```
+
 #### APIs
 
-##### `t(key: string, params?: object, lang?: string): string`
+##### `t(id: string, args?: Record<string, string | NativeArgument>): string`
 
-The parameters are nearly the same as [`frenchkiss.t`](https://github.com/koala-interactive/frenchkiss.js#frenchkisstkey-string-params-object-lang-string-string) except for the following:
+- `id` can only be a string literal, or the function won't be call. Same as `id` in [`FluentBundle.getMessage(id)`](https://projectfluent.org/fluent.js/bundle/classes/fluentbundle.html#getmessage)
+- `args` Same as `args` in [`FluentBundle.formatPattern(pattern, args)`](https://projectfluent.org/fluent.js/bundle/classes/fluentbundle.html#formatpattern) except that it doesn't support [FluentType](https://projectfluent.org/fluent.js/bundle/classes/fluenttype.html) to be the record value.
 
-- `key` can only be a string literal, or the function won't be call
-- `lang` can only be a string literal
-
-The return value can be a string literal or a string wrapped function call like `(function(a,f,k,l,v ) { var p=a||{};return 'Hello, '+(p['name']||(p['name']=='0'?0:'name' in p?'':v('name',k,l)))+'!' })({ name: name })`
+The return value can be a string literal or a string wrapped function call like `('0.0') === (new Intl.NumberFormat(['en-US'], { minimumFractionDigits: 1 }).format(score)) ? ('You scored zero points. What happened?') : ('other') === (new Intl.PluralRules(['en-US'], { minimumFractionDigits: 1 }).select(new Intl.NumberFormat(['en-US'], { minimumFractionDigits: 1 }).format(score))) ? ('You scored ' + '&#x2068;' + new Intl.NumberFormat(['en-US'], { minimumFractionDigits: 1 }).format(score) + '&#x2069;' + ' points.') : ('You scored ' + '&#x2068;' + new Intl.NumberFormat(['en-US'], { minimumFractionDigits: 1 }).format(score) + '&#x2069;' + ' points.')`
 
 ## How it works?
 
@@ -188,7 +256,7 @@ frenchkiss.set('en', {
 });
 ```
 
-Characters like `<` and `>` are also need to be used in escape form `&lt;` and `&gt;`
+Characters like `<` and `>` are also recommended to be used in escape form `&lt;` and `&gt;`
 
 ## Building for multiple languages
 
