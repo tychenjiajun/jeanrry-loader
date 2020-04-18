@@ -295,3 +295,7 @@ TBD
 - Integration with more i18n frameworks.
 - Add tests.
 - Performance optimizations.
+
+## Licenses
+
+`fluent-translator.ts` and it's compiled files are released in Apache-2.0 license. `frenchkiss-translator.ts` and it's compiled files are released in MIT license. The rests are released in GPL-2.0 license.
