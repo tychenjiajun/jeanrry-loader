@@ -11,8 +11,8 @@ A Vue.js SFC loader for localizing your app at **building** time.
 
 ## Supported I18n/L10n Frameworks
 
-* [frenchkiss.js](#FrenchkissTranslator)
-* [Project Fluent](https://projectfluent.org/)
+* [frenchkiss.js](#frenchkiss-translator)
+* [Project Fluent](#fluent-translator)
 
 ## Installation
 
