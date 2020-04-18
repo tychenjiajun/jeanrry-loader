@@ -106,7 +106,7 @@ Following is the complete default options
 If you want to use `$t` instead of `t`:
 
 ```javascript
-import FluentTranslator from "jeanrry-loader/dist/translators/fluent-translator;
+import FluentTranslator from "jeanrry-loader/dist/translators/fluent-translator;"
 
 FluentTranslator.functionNameMappings = { '$t' : 't' }
 ```
