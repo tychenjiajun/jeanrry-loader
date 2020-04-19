@@ -1,4 +1,4 @@
-import { Translator, TranslateExpression, TranslateResult } from '../interfaces';
+import { Translator, TranslateExpression, TranslateResult, ExpressionType } from '../interfaces';
 import * as kiss from 'frenchkiss';
 
 kiss.onMissingVariable((variable, key, language) => {
@@ -163,9 +163,11 @@ const translator: Translator = {
     const key = result.substring(1, result.length - 1);
 
     if (rest.length === 0) {
+      const temp = kiss.t(key);
+
       return {
-        optimized: translateExpression.optimize,
-        content: translateExpression.optimize ? kiss.t(key) : `'${kiss.t(key)}'`
+        optimized: true,
+        content: `'${temp}'`
       };
     }
     ({ result, rest } = extractLocale(rest));
@@ -175,27 +177,23 @@ const translator: Translator = {
     const paramsStr = rest;
 
     try {
-      const params = new Function('"use strict"; return ' + paramsStr)();
-      return {
-        optimized: translateExpression.optimize,
-        content: translateExpression.optimize ? kiss.t(key, params, language) : `'${kiss.t(key, params, language)}'`
-      };
+      kiss.t(key, {}, language); // fresh the cache
     } catch (err) {
-      try {
-        kiss.t(key, {}, language); // fresh the cache
-      } catch (err) {
-        // ignore
-      }
-      const funcStr = kiss.cache[language][key]
-        .toString()
-        .trim()
-        .replace(/(\r\n|\n|\r)/gm, ' ')
-        .replace(/( anonymous)/g, '');
-      return {
-        optimized: false,
-        content: `(${funcStr})(${paramsStr})`
-      };
+      // ignore
     }
+    let funcStr = kiss.cache[language][key]
+      .toString()
+      .trim()
+      .replace(/(\r\n|\n|\r)/gm, ' ')
+      .replace(/( anonymous)/g, '');
+
+    if (translateExpression.type === ExpressionType.attr) {
+      funcStr = funcStr.replace(/"/g, "'");
+    }
+    return {
+      optimized: false,
+      content: `(${funcStr})(${paramsStr})`
+    };
   }
 };
 

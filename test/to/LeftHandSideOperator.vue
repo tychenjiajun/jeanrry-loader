@@ -1,5 +1,5 @@
 <template>
   <div>
-    {{ 'Translated' + 'Hi!' }}
+    TranslatedHi!
   </div>
 </template>

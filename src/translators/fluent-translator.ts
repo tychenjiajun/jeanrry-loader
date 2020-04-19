@@ -538,8 +538,6 @@ const translator: FluentTranslator = {
     }
 
     bundle._transform = function (str: string): string {
-      str.replace(/"/g, '&quot;');
-      str.replace(/'/g, '&#39;');
       return `'${str}'`;
     };
 
@@ -569,18 +567,8 @@ const translator: FluentTranslator = {
       }
     };
 
-    let content = bundle.formatPattern(message.value, params);
+    const content = bundle.formatPattern(message.value, params);
 
-    try {
-      if (translateExpression.optimize) {
-        content = new Function('"use strict"; return ' + content)();
-        return {
-          optimized: true,
-          content: content
-        };
-      }
-      // eslint-disable-next-line no-empty
-    } catch (ignored) {}
     return {
       optimized: false,
       content: content

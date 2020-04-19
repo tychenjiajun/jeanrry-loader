@@ -8,6 +8,7 @@ A Vue.js SFC loader for localizing your app at **building** time.
 [![npm](https://img.shields.io/npm/dw/jeanrry-loader?style=for-the-badge)](https://www.npmjs.com/package/jeanrry-loader)
 [![npm (tag)](https://img.shields.io/npm/v/jeanrry-loader/latest?style=for-the-badge)](https://www.npmjs.com/package/jeanrry-loader)
 ![NPM](https://img.shields.io/npm/l/jeanrry-loader?style=for-the-badge)
+![](https://img.shields.io/badge/dependencies-none-brightgreen.svg?style=for-the-badge)
 
 ## Supported I18n/L10n Frameworks
 

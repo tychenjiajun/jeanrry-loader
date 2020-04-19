@@ -1,25 +1,31 @@
-import { parseComponent } from 'vue-template-compiler';
 import * as utils from 'loader-utils';
 import { LoaderOption, TranslateExpression, Translator, ExpressionType, FunctionNameMappings } from './interfaces';
 import frenchkissTranslator from './translators/frenchkiss-translator';
 
 const unicodeRegExp = /a-zA-Z\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD/;
 
+const attribute = /^\s*([^\s"'<>/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
+const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`;
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`;
-const startTag = new RegExp(`<${qnameCapture}.*(( :| \\.| v-bind:).*\\=".*").*(\\/?)>`, 'g');
-const endTag = new RegExp(`<\\/${qnameCapture}[^>]*>`, 'g');
+const startTagOpen = new RegExp(`^<${qnameCapture}`);
+const startTagClose = /^\s*(\/?)>/;
+const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`);
+const doctype = /^<!DOCTYPE [^>]+>/i;
+// #7298: escape - to avoid being passed as HTML comment when inlined in page
+const comment = /^<!--/;
+const conditionalComment = /^<!\[/;
 
-const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
+const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/;
 
-const bindRE = /\s:|\s\.|\sv-bind:/g;
+const bindRE = /^:|^\.|^v-bind:/;
 
 const defaultLoaderOptions: LoaderOption = {
   translator: frenchkissTranslator
 };
 
 /**
- * Extract translation expressions from am expression in Vue template syntax.
+ * Extract translation expressions from an expression in Vue template syntax.
  * @param expression The expression placed in the Vue template syntax.
  * @param beginPos The start position of the expression in the whole template.
  * @param functionNameMappings THe function name mappings in translator.
@@ -137,141 +143,248 @@ function extractTranslationExpression(
         end: end,
         content: content.substring(beginPosInFunc, pointer),
         functionName: functionNameMappings[match[2]],
-        type: type,
-        optimize: content.substring(beginPosInFunc, pointer) === expression.trim()
+        type: type
       });
     }
   }
   return array;
 }
 
-export default function loader(source: string): string {
+export default function loader(html: string): string {
   const loaderOptions: LoaderOption = { ...defaultLoaderOptions, ...utils.getOptions(this) };
-
-  let translateExpressions: Array<TranslateExpression> = [];
 
   const loaderTranslator = loaderOptions.translator as Translator;
 
-  const sfc = parseComponent(source);
-  const templateStart = sfc.template?.start as number;
-  const templateEnd = sfc.template?.end as number;
-  const toCompileSource = source.substring(templateStart, templateEnd);
-  const tagsPositions: Array<number> = [];
+  let lastTag;
 
-  const startTagMatches = toCompileSource.matchAll(startTag);
-  for (const match of startTagMatches) {
-    const startTagOpenPos = match.index as number;
-    // v-bind should be in between
-    const bindREMatches = match[0].matchAll(bindRE);
-    for (const bindREMatch of bindREMatches) {
-      const startAttrPos = startTagOpenPos + (bindREMatch.index as number) + bindREMatch[0].length;
-      const tempMatch = toCompileSource.substring(startAttrPos).match(/="/);
-      const startAttrValuePos = startAttrPos + (tempMatch?.index as number) + 2;
-      const endAttrValuePos = startAttrValuePos + toCompileSource.substring(startAttrValuePos).search(/"/);
-      const bindExpression = toCompileSource.substring(startAttrValuePos, endAttrValuePos);
-      translateExpressions = translateExpressions.concat(
-        extractTranslationExpression(
-          bindExpression,
-          startAttrValuePos,
-          loaderTranslator.functionNameMappings,
-          ExpressionType.attr
-        )
-      );
-    }
+  let result = '';
+
+  const stack = [];
+
+  function advance(n: number): string {
+    const ret = html.substring(0, n);
+    html = html.substring(n);
+    return ret;
   }
 
-  const endTagMatches = toCompileSource.matchAll(endTag);
-  for (const match of endTagMatches) {
-    tagsPositions.push(match.index as number, (match.index as number) + match[0].length);
-  }
+  while (html) {
+    // Make sure we're not in a plaintext content element like script/style
+    if (lastTag == null || !['script', 'style', 'textarea'].includes(lastTag)) {
+      let textEnd = html.indexOf('<');
+      if (textEnd === 0) {
+        // Comment:
+        if (comment.test(html)) {
+          const commentEnd = html.indexOf('-->');
 
-  tagsPositions.sort((a, b) => a - b);
-
-  if (tagsPositions.length > 0) {
-    const matches = toCompileSource.substring(0, tagsPositions[0]).matchAll(defaultTagRE);
-    for (const match of matches) {
-      let begin = (match.index as number) + 2; // skip the {{
-      for (; toCompileSource.charAt(begin) === ' '; begin++);
-      translateExpressions = translateExpressions.concat(
-        extractTranslationExpression(match[1].trim(), begin, loaderTranslator.functionNameMappings, ExpressionType.text)
-      );
-    }
-  }
-
-  for (let i = 1; i < tagsPositions.length; i += 2) {
-    const matches = toCompileSource.substring(tagsPositions[i], tagsPositions[i + 1]).matchAll(defaultTagRE);
-    for (const match of matches) {
-      let begin = tagsPositions[i] + (match.index as number) + 2; // skip the {{
-      for (; toCompileSource.charAt(begin) === ' '; begin++);
-
-      translateExpressions = translateExpressions.concat(
-        extractTranslationExpression(match[1].trim(), begin, loaderTranslator.functionNameMappings, ExpressionType.text)
-      );
-    }
-  }
-
-  translateExpressions.sort((a, b) => a.begin - b.begin);
-
-  if (translateExpressions.length === 0) return source;
-
-  let result = source.substring(0, templateStart);
-  let translatingPointer = 0;
-  for (const translateExpression of translateExpressions) {
-    try {
-      const translated = loaderTranslator.translate(translateExpression);
-      if (translateExpression.type === ExpressionType.attr) {
-        translated.content = translated.content.replace(/"/g, '');
-      }
-      if (translateExpression.optimize && translated.optimized) {
-        switch (translateExpression.type) {
-          case ExpressionType.attr: {
-            for (
-              translateExpression.begin = translateExpression.begin - 1;
-              toCompileSource.charAt(translateExpression.begin) === ' ';
-              translateExpression.begin = translateExpression.begin - 1
-            );
-            for (
-              ;
-              toCompileSource.charAt(translateExpression.end) === ' ';
-              translateExpression.end = translateExpression.end + 1
-            );
-            let attrBegin = translateExpression.begin - 1;
-            for (; toCompileSource.charAt(attrBegin) !== ' '; attrBegin--);
-            const attrName = toCompileSource.substring(attrBegin, translateExpression.begin - 1).split(':')[1];
-            if (!attrName.startsWith('[')) {
-              translated.content = attrName + '="' + translated.content;
-              translateExpression.begin = attrBegin + 1;
-            }
-            break;
-          }
-          case ExpressionType.text: {
-            for (
-              translateExpression.begin = translateExpression.begin - 1;
-              toCompileSource.charAt(translateExpression.begin) === ' ';
-              translateExpression.begin = translateExpression.begin - 1
-            );
-            for (
-              ;
-              toCompileSource.charAt(translateExpression.end) === ' ';
-              translateExpression.end = translateExpression.end + 1
-            );
-            translateExpression.begin = translateExpression.begin - 1; // {{
-            translateExpression.end = translateExpression.end + 2; // }}
-            break;
+          if (commentEnd >= 0) {
+            result += advance(commentEnd + 3);
+            continue;
           }
         }
+
+        // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
+        if (conditionalComment.test(html)) {
+          const conditionalEnd = html.indexOf(']>');
+
+          if (conditionalEnd >= 0) {
+            result += advance(conditionalEnd + 2);
+            continue;
+          }
+        }
+
+        // Doctype:
+        const doctypeMatch = html.match(doctype);
+        if (doctypeMatch) {
+          result += advance(doctypeMatch[0].length);
+          continue;
+        }
+
+        // End tag:
+        const endTagMatch = html.match(endTag);
+        if (endTagMatch) {
+          result += advance(endTagMatch[0].length);
+          const tagName = endTagMatch[1];
+          let pos = 0;
+          for (pos = stack.length - 1; pos >= 0; pos--) {
+            if (stack[pos] !== tagName) {
+              stack.pop();
+            } else {
+              stack.pop();
+              break;
+            }
+          }
+          if (pos === -1) {
+            return result + html;
+          }
+          if (pos === 0 && tagName === 'template') {
+            return result + html;
+          }
+          lastTag = stack[pos - 1];
+          continue;
+        }
+
+        // Start tag:
+        const startTagMatch = html.match(startTagOpen);
+        if (startTagMatch) {
+          lastTag = startTagMatch[1];
+          stack.push(lastTag);
+          result += advance(startTagMatch[0].length);
+          let end, attr;
+          attr = html.match(dynamicArgAttribute) || html.match(attribute);
+          while (attr) {
+            const bindREMatch = attr[1].match(bindRE);
+            if (bindREMatch == null || (lastTag === 'template' && stack.length === 1)) {
+              result += advance(attr[0].length);
+            } else {
+              const attrValue = attr[3] || attr[4] || attr[5] || '';
+              const exps = extractTranslationExpression(
+                attrValue,
+                0,
+                loaderTranslator.functionNameMappings,
+                ExpressionType.attr
+              );
+              let translatedAttrValue = '';
+              let prevIdx = 0;
+              for (const exp of exps) {
+                translatedAttrValue += attrValue.substring(prevIdx, exp.begin);
+                try {
+                  const tr = loaderTranslator.translate(exp).content;
+                  translatedAttrValue += tr;
+                } catch (err) {
+                  console.warn(`Skipping translation [ ${exp.content} ] in ${this.resource}: ${err}`);
+                  translatedAttrValue += exp.content;
+                }
+                prevIdx = exp.end;
+              }
+              translatedAttrValue += attrValue.substring(prevIdx);
+              result += advance(attr[0].length - attr[0].trimStart().length);
+              try {
+                const optimizedTranslatedAttrValue = (new Function(
+                  '"use strict"; return (' + translatedAttrValue + ')'
+                )() as string)
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#39;');
+                advance(bindREMatch[0].length);
+                result += advance(attr[1].length - bindREMatch[0].length);
+                result += advance(attr[2].length);
+                result += advance(
+                  (attr[0].trimStart().length - attrValue.length - attr[1].length - attr[2].length) / 2
+                );
+                result += optimizedTranslatedAttrValue;
+                advance(attrValue.length);
+                result += advance(
+                  (attr[0].trimStart().length - attrValue.length - attr[1].length - attr[2].length) / 2
+                );
+              } catch (err) {
+                result += advance(attr[1].length);
+                result += advance(attr[2].length);
+                result += advance(
+                  (attr[0].trimStart().length - attrValue.length - attr[1].length - attr[2].length) / 2
+                );
+                result += translatedAttrValue;
+                advance(attrValue.length);
+                result += advance(
+                  (attr[0].trimStart().length - attrValue.length - attr[1].length - attr[2].length) / 2
+                );
+              }
+            }
+            attr = html.match(dynamicArgAttribute) || html.match(attribute);
+            end = html.match(startTagClose);
+          }
+          if (end) {
+            result += advance(end[0].length);
+          }
+          continue;
+        }
       }
-      result = result + toCompileSource.substring(translatingPointer, translateExpression.begin) + translated.content;
-    } catch (err) {
-      console.warn(
-        `Skipping translation [ ${translateExpression.content} ] in ${this.resource} at ${translateExpression.begin}: ${err}`
-      );
-      result =
-        result + toCompileSource.substring(translatingPointer, translateExpression.begin) + translateExpression.content;
+
+      // else text end large than 0: handling text
+
+      let text, rest, next;
+      if (textEnd >= 0) {
+        rest = html.slice(textEnd);
+        while (
+          !endTag.test(rest) &&
+          !startTagOpen.test(rest) &&
+          !comment.test(rest) &&
+          !conditionalComment.test(rest)
+        ) {
+          // < in plain text, be forgiving and treat it as text
+          next = rest.indexOf('<', 1);
+          if (next < 0) break;
+          textEnd += next;
+          rest = html.slice(textEnd);
+        }
+        text = html.substring(0, textEnd);
+      }
+
+      // the rest are all text
+      if (textEnd < 0) {
+        text = html;
+      }
+
+      if (text) {
+        if (lastTag != null) {
+          let match = text.match(defaultTagRE);
+          while (match != null) {
+            result += advance(match.index as number);
+            const leftSpaces = match[1].length - match[1].trimStart().length;
+            const rightSpaces = match[1].length - match[1].trimEnd().length;
+            const originalExp = match[1].trim();
+            const exps = extractTranslationExpression(
+              match[1].trim(),
+              0,
+              loaderTranslator.functionNameMappings,
+              ExpressionType.text
+            );
+            let translatedValue = '';
+            let prevIdx = 0;
+            for (const exp of exps) {
+              translatedValue += originalExp.substring(prevIdx, exp.begin);
+              try {
+                const tr = loaderTranslator.translate(exp).content;
+                translatedValue += tr;
+              } catch (err) {
+                console.warn(`Skipping translation [ ${exp.content} ] in ${this.resource}: ${err}`);
+                translatedValue += exp.content;
+              }
+              prevIdx = exp.end;
+            }
+            translatedValue += originalExp.substring(prevIdx);
+            try {
+              const optimizedTranslatedValue = (new Function(
+                '"use strict"; return (' + translatedValue + ')'
+              )() as string)
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+              advance(match[0].length);
+              result += optimizedTranslatedValue;
+            } catch (err) {
+              result += advance((match[0].length - match[1].length) / 2);
+              result += advance(leftSpaces);
+              result += translatedValue;
+              advance(originalExp.length);
+              result += advance(rightSpaces);
+              result += advance((match[0].length - match[1].length) / 2);
+            }
+            text = text.substring(match[0].length + (match.index as number));
+            match = text.match(defaultTagRE);
+          }
+        }
+        result += advance(text.length);
+      }
+    } else {
+      // expecting end of script style or textarea
+      const reg = new RegExp('([\\s\\S]*?)(</' + lastTag + '[^>]*>)');
+      const regMatch = html.match(reg);
+      if (stack.length < 1 || regMatch == null) {
+        return result + html;
+      }
+      lastTag = stack.pop();
+
+      result += advance(regMatch[0].length);
     }
-    translatingPointer = translateExpression.end;
   }
-  result = result + toCompileSource.substring(translatingPointer) + source.substring(templateEnd);
 
   return result;
 }

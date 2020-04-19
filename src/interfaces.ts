@@ -21,7 +21,6 @@ export interface LoaderOption {
 }
 
 export interface TranslateExpression extends Expression {
-  optimize: boolean;
   functionName: string;
 }
 
