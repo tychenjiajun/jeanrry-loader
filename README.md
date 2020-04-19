@@ -12,8 +12,8 @@ A Vue.js SFC loader for localizing your app at **building** time.
 
 ## Supported I18n/L10n Frameworks
 
-* [frenchkiss.js](#FrenchkissTranslator)
-* [Project Fluent](https://projectfluent.org/)
+* [frenchkiss.js](#frenchkiss-translator)
+* [Project Fluent](#fluent-translator)
 
 ## Installation
 
@@ -107,7 +107,7 @@ Following is the complete default options
 If you want to use `$t` instead of `t`:
 
 ```javascript
-import FluentTranslator from "jeanrry-loader/dist/translators/fluent-translator;
+import FluentTranslator from "jeanrry-loader/dist/translators/fluent-translator;"
 
 FluentTranslator.functionNameMappings = { '$t' : 't' }
 ```
