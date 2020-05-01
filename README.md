@@ -9,6 +9,14 @@ A Vue.js SFC loader for localizing your app at **building** time.
 [![npm (tag)](https://img.shields.io/npm/v/jeanrry-loader/latest?style=for-the-badge)](https://www.npmjs.com/package/jeanrry-loader)
 ![NPM](https://img.shields.io/npm/l/jeanrry-loader?style=for-the-badge)
 ![](https://img.shields.io/badge/dependencies-none-brightgreen.svg?style=for-the-badge)
+[![CodeFactor](https://www.codefactor.io/repository/github/tychenjiajun/jeanrry-loader/badge)](https://www.codefactor.io/repository/github/tychenjiajun/jeanrry-loader/badge?style=for-the-badge)
+
+## Features
+
+* Localizing your component's template
+* SSR compatible
+* Use your favorite i18n/l10n frameworks, no need to learn new syntax
+* Safe and fast
 
 ## Supported I18n/L10n Frameworks
 
@@ -89,6 +97,14 @@ module.exports = {
 ```html
 <template>
   <HelloWorld :msg="t('welcome', { name: name })" />
+</template>
+```
+
+### Use the [`translate`](https://html.spec.whatwg.org/multipage/dom.html#the-translate-attribute) attribute
+
+```html
+<template>
+  <HelloWorld :msg="t('welcome', { name: name })" translate=no> <!-- will not be translate --->
 </template>
 ```
 
@@ -293,7 +309,8 @@ TBD
 
 ## Todos
 
-- Integration with more i18n frameworks.
+- [`lang`](https://html.spec.whatwg.org/multipage/dom.html#attr-lang) attribute support
+- `v-for` support (maybe)
 - Add tests.
 - Performance optimizations.
 
