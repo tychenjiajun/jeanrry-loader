@@ -102,7 +102,7 @@ export default function loader(html: string): string {
 
   let result = '';
 
-  const stack = [];
+  const stack: Array<{ tagName: string; translate: boolean }> = [];
 
   function advance(n: number): string {
     const ret = html.substring(0, n);
@@ -112,7 +112,7 @@ export default function loader(html: string): string {
 
   while (html) {
     // Make sure we're not in a plaintext content element like script/style
-    if (lastTag == null || !['script', 'style', 'textarea'].includes(lastTag)) {
+    if (lastTag == null || !['script', 'style', 'textarea'].includes(lastTag.tagName)) {
       let textEnd = html.indexOf('<');
       if (textEnd === 0) {
         // Comment:
@@ -149,7 +149,7 @@ export default function loader(html: string): string {
           const tagName = endTagMatch[1];
           let pos = 0;
           for (pos = stack.length - 1; pos >= 0; pos--) {
-            if (stack[pos] !== tagName) {
+            if (stack[pos].tagName !== tagName) {
               stack.pop();
             } else {
               stack.pop();
@@ -169,14 +169,27 @@ export default function loader(html: string): string {
         // Start tag:
         const startTagMatch = html.match(startTagOpen);
         if (startTagMatch) {
-          lastTag = startTagMatch[1];
-          stack.push(lastTag);
+          stack.push({
+            tagName: startTagMatch[1],
+            translate: stack.length === 0 ? true : stack[stack.length - 1].translate
+          });
+          lastTag = stack[stack.length - 1];
           result += advance(startTagMatch[0].length);
+          let resultIfNotTranslate = result;
           let end, attr;
           attr = html.match(dynamicArgAttribute) || html.match(attribute);
           while (attr) {
+            resultIfNotTranslate += attr[0];
             const bindREMatch = attr[1].match(bindRE);
-            if (bindREMatch == null || (lastTag === 'template' && stack.length === 1)) {
+            if (lastTag.tagName === 'template' && stack.length === 1) {
+              result += advance(attr[0].length);
+            } else if (attr[1] === 'translate') {
+              result += advance(attr[0].length);
+              const attrValue = attr[3] || attr[4] || attr[5] || '';
+              stack[stack.length - 1].translate =
+                (attrValue === 'yes' || attrValue === '' || stack[stack.length - 1].translate) && attrValue !== 'no';
+              lastTag = stack[stack.length - 1];
+            } else if (bindREMatch == null) {
               result += advance(attr[0].length);
             } else {
               const attrValue = attr[3] || attr[4] || attr[5] || '';
@@ -235,6 +248,9 @@ export default function loader(html: string): string {
             end = html.match(startTagClose);
           }
           if (end) {
+            if (!lastTag.translate) {
+              result = resultIfNotTranslate;
+            }
             result += advance(end[0].length);
           }
           continue;
@@ -267,7 +283,7 @@ export default function loader(html: string): string {
       }
 
       if (text) {
-        if (lastTag != null) {
+        if (lastTag != null && lastTag.translate) {
           let match = text.match(defaultTagRE);
           while (match != null) {
             result += advance(match.index as number);

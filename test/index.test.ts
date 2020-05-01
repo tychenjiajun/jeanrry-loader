@@ -75,6 +75,13 @@ test('multiple sequential text template', async () => {
   expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
 });
 
+test('translate attribute', async () => {
+  const fileName = 'TranslateAttribute';
+  const stats = await compiler(fileName);
+
+  expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
+});
+
 describe('frenchkiss', () => {
   test('use object literal as params in frenchkiss', async () => {
     const fileName = 'frenchkiss/ObjectLiteralParams';
@@ -271,6 +278,13 @@ last-notice = Last checked: { DATETIME($lastChecked, day: "numeric", month: "lon
 
   test('use data from vue instance and calling built-in date time function in fluent', async () => {
     const fileName = 'fluent/BuiltInDateTimeFunctionWithVueData';
+    const stats = await compiler(fileName, { translator: fluentTranslator });
+
+    expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
+  });
+
+  test('translate attribute', async () => {
+    const fileName = 'TranslateAttribute';
     const stats = await compiler(fileName, { translator: fluentTranslator });
 
     expect(getCodeFromStats(stats)).toBe(getExpectedResult(fileName));
