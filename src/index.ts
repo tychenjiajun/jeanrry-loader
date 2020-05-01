@@ -57,77 +57,20 @@ function extractTranslationExpression(
 
     while (stack.length > 0 && pointer < expression.length) {
       const char = expression.charAt(pointer);
-      // TODO: handling escape?
-      switch (char) {
-        // string handling
-        case "'": {
-          if (stringType === '') stringType = "'";
-          // starting string
-          else if (stringType === "'") {
-            // ending string
-            stringType = '';
-          }
-          break;
-        }
-        case '"': {
-          if (stringType === '') stringType = '"';
-          // starting string
-          else if (stringType === '"') {
-            // ending string
-            stringType = '';
-          }
-          break;
-        }
-        case '`': {
-          if (stringType === '') stringType = '`';
-          // starting string
-          else if (stringType === '`') {
-            // ending string
-            stringType = '';
-          }
-          break;
-        }
-        // brackets handling
-        case '[':
-        case '{':
-        case '(': {
-          if (stringType === '') {
-            stack.push(char);
-          }
-          // skip if in string
-          break;
-        }
-        case ']': {
-          if (stringType === '') {
-            if (stack.length > 0 && stack[stack.length - 1] === '[') {
-              stack.pop();
-            } else {
-              pointer = expression.length; // break from the while loop
-            }
-          }
-          break;
-        }
-        case '}': {
-          if (stringType === '') {
-            if (stack.length > 0 && stack[stack.length - 1] === '{') {
-              stack.pop();
-            } else {
-              pointer = expression.length; // break from the while loop
-            }
-          }
-          break;
-        }
-        case ')': {
-          if (stringType === '') {
-            if (stack.length > 0 && stack[stack.length - 1] === '(') {
-              stack.pop();
-            } else {
-              pointer = expression.length; // break from the while loop
-            }
-          }
-          break;
+      const brackets = '[]{}()';
+      if (brackets.includes(char) && stringType === '') {
+        if ((brackets.indexOf(char) & 1) === 0) {
+          stack.push(char);
+        } else if (stack.length > 0 && brackets.charAt(brackets.indexOf(stack[stack.length - 1]) + 1) === char) {
+          stack.pop();
+        } else {
+          pointer = expression.length;
         }
       }
+      if (char.match(/['"`]/)) {
+        stringType = stringType.length > 0 ? '' : char;
+      }
+      // TODO: handling escape?
       pointer++;
     }
 

@@ -1,66 +1,10 @@
 import { Translator, TranslateExpression, TranslateResult, ExpressionType } from '../interfaces';
 import * as kiss from 'frenchkiss';
+import { extractKey } from '../helpers/extract';
 
 kiss.onMissingVariable((variable, key, language) => {
   throw new Error(`Missing the variable "${variable}" in ${language}->${key}.`);
 });
-
-function extractKey(expression: string): { result: string; rest: string } {
-  if (expression.trim().length === 0) throw new Error('Key is required!');
-  if ([...expression.matchAll(/['"`]/g)].length < 2) throw new Error('Key should be a string!');
-  let p = 0;
-  let stringType = '';
-  for (; p < expression.length; p++) {
-    switch (expression.charAt(p)) {
-      case "'": {
-        if (stringType === '') stringType = "'";
-        // starting string
-        else if (stringType === "'") {
-          // ending string
-          let rest = expression.substring(p + 1).trim();
-          if (rest.length > 0 && rest.charAt(0) === ',') rest = rest.substr(1);
-          return {
-            result: expression.substring(0, p + 1).trim(),
-            rest: rest
-          };
-        }
-        break;
-      }
-      case '"': {
-        if (stringType === '') stringType = '"';
-        // starting string
-        else if (stringType === '"') {
-          // ending string
-          let rest = expression.substring(p + 1).trim();
-          if (rest.length > 0 && rest.charAt(0) === ',') rest = rest.substr(1);
-          return {
-            result: expression.substring(0, p + 1).trim(),
-            rest: rest
-          };
-        }
-        break;
-      }
-      case '`': {
-        if (stringType === '') stringType = '`';
-        // starting string
-        else if (stringType === '`') {
-          // ending string
-          let rest = expression.substring(p + 1).trim();
-          if (rest.length > 0 && rest.charAt(0) === ',') rest = rest.substr(1);
-          return {
-            result: expression.substring(0, p + 1).trim(),
-            rest: rest
-          };
-        }
-        break;
-      }
-      case ',': {
-        if (stringType === '') throw new Error('Key is required!');
-      }
-    }
-  }
-  throw new Error('Key is required!');
-}
 
 function extractLocale(
   expression: string
@@ -83,69 +27,32 @@ function extractLocale(
       };
     }
   }
+
+  function extract(expression: string, p: number): { result: string; rest: string } {
+    let rest = expression.substring(0, p).trim();
+    if (rest.length === 0) throw new Error('Params should not be a string literal!');
+    if (rest.charAt(rest.length - 1) === ',') {
+      rest = rest.substring(0, rest.length - 1);
+    } else {
+      throw new Error('Tagged template is not supported!');
+    }
+    return {
+      rest: rest,
+      result: expression.substring(p).trim()
+    };
+  }
+
   let stringType = '';
   for (; p > 1; p--) {
-    switch (expression.charAt(p)) {
-      case "'": {
-        if (stringType === '') stringType = "'";
-        // starting string
-        else if (stringType === "'") {
-          // ending string
-          let rest = expression.substring(0, p).trim();
-          if (rest.length === 0) throw new Error('Params should not be a string literal!');
-          if (rest.charAt(rest.length - 1) === ',') {
-            rest = rest.substring(0, rest.length - 1);
-          } else {
-            throw new Error('Tagged template is not supported!');
-          }
-          return {
-            rest: rest,
-            result: expression.substring(p).trim()
-          };
-        }
-        break;
-      }
-      case '"': {
-        if (stringType === '') stringType = '"';
-        // starting string
-        else if (stringType === '"') {
-          // ending string
-          let rest = expression.substring(0, p).trim();
-          if (rest.length === 0) throw new Error('Params should not be a string literal!');
-          if (rest.charAt(rest.length - 1) === ',') {
-            rest = rest.substring(0, rest.length - 1);
-          } else {
-            throw new Error('Tagged template is not supported!');
-          }
-          return {
-            rest: rest,
-            result: expression.substring(p).trim()
-          };
-        }
-        break;
-      }
-      case '`': {
-        if (stringType === '') stringType = '`';
-        // starting string
-        else if (stringType === '`') {
-          // ending string
-          let rest = expression.substring(0, p).trim();
-          if (rest.length === 0) throw new Error('Params should not be a string literal!');
-          if (rest.charAt(rest.length - 1) === ',') {
-            rest = rest.substring(0, rest.length - 1);
-          } else {
-            throw new Error('Tagged template is not supported!');
-          }
-          return {
-            rest: rest,
-            result: expression.substring(p).trim()
-          };
-        }
-        break;
-      }
-      case ',': {
-        if (stringType === '') throw new Error('Key is required!');
-      }
+    const char = expression.charAt(p);
+    if (char === ',' && stringType === '') {
+      throw new Error('Key is required!');
+    }
+    if (char === stringType) {
+      return extract(expression, p);
+    }
+    if (char.match(/['"`]/)) {
+      stringType = char;
     }
   }
   throw new Error('Unexpected parsing error!');

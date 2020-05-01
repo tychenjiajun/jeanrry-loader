@@ -16,6 +16,7 @@ import {
 import { FluentArgument } from '@fluent/bundle/esm/bundle';
 import { Scope } from '@fluent/bundle/esm/scope';
 import { FluentNone, FluentValue, FluentNumber, FluentType, FluentDateTime } from '@fluent/bundle/esm/types';
+import { extractKey } from '../helpers/extract';
 
 // The maximum number of placeables which can be expanded in a single call to
 // `formatPattern`. The limit protects against the Billion Laughs and Quadratic
@@ -28,63 +29,6 @@ const PDI = `'&#x2069;'`;
 
 export interface FluentTranslator extends Translator {
   bundle: FluentBundle | null;
-}
-
-function extractKey(expression: string): { result: string; rest: string } {
-  if (expression.trim().length === 0) throw new Error('Key is required!');
-  if ([...expression.matchAll(/['"`]/g)].length < 2) throw new Error('Key should be a string!');
-  let p = 0;
-  let stringType = '';
-  for (; p < expression.length; p++) {
-    switch (expression.charAt(p)) {
-      case "'": {
-        if (stringType === '') stringType = "'";
-        // starting string
-        else if (stringType === "'") {
-          // ending string
-          let rest = expression.substring(p + 1).trim();
-          if (rest.length > 0 && rest.charAt(0) === ',') rest = rest.substr(1);
-          return {
-            result: expression.substring(0, p + 1).trim(),
-            rest: rest
-          };
-        }
-        break;
-      }
-      case '"': {
-        if (stringType === '') stringType = '"';
-        // starting string
-        else if (stringType === '"') {
-          // ending string
-          let rest = expression.substring(p + 1).trim();
-          if (rest.length > 0 && rest.charAt(0) === ',') rest = rest.substr(1);
-          return {
-            result: expression.substring(0, p + 1).trim(),
-            rest: rest
-          };
-        }
-        break;
-      }
-      case '`': {
-        if (stringType === '') stringType = '`';
-        // starting string
-        else if (stringType === '`') {
-          // ending string
-          let rest = expression.substring(p + 1).trim();
-          if (rest.length > 0 && rest.charAt(0) === ',') rest = rest.substr(1);
-          return {
-            result: expression.substring(0, p + 1).trim(),
-            rest: rest
-          };
-        }
-        break;
-      }
-      case ',': {
-        if (stringType === '') throw new Error('Key is required!');
-      }
-    }
-  }
-  throw new Error('Key is required!');
 }
 
 function extractParams(expression: string): Record<string, FluentArgument> {
